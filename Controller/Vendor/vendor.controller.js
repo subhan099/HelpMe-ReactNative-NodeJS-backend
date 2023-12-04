@@ -1,9 +1,12 @@
-const UserModel = require("../../Model/user.model");
-const userRegister = async (req, res) => {
+const vendorModel = require("../../Model/vendor.model");
+
+// Vendor SignUp
+
+const vendorRegister = async (req, res) => {
   console.log("register", req.body);
     const { firstName, lastName, email, password } = req.body;
     const missingFields = [];
-    //   checking missing fields
+//   checking missing fields
     if (!firstName) missingFields.push('firstName');
     if (!lastName) missingFields.push('lastName');
     if (!email) missingFields.push('email');
@@ -23,7 +26,7 @@ const userRegister = async (req, res) => {
 
     } else {
         try {
-            const checkUser = await UserModel.find({email});
+            const checkUser = await vendorModel.find({email});
             if(checkUser?.length > 0){
                 res.status(422).json({
                     status : false,
@@ -31,7 +34,7 @@ const userRegister = async (req, res) => {
                     
                   });
             }else{
-                const registerUser =  new UserModel({
+                const registerUser =  new vendorModel({
                     firstName,
                     lastName,
                     email,
@@ -56,57 +59,62 @@ const userRegister = async (req, res) => {
   };
   
 
+ 
 
-  const  userSignIn = async (req, res ) => {
+  const  vendorSignIn = async (req, res ) => {
     const { email, password } = req.body;
-    console.log("calling", req.body);
+    console.log("calling the api", req.body);
     const missingFields  = [];
-    if(!email) missingFields.push('email');
-    if(!password) missingFields.push('password');
-    if(missingFields.length > 0) {
-      const error  = missingFields.reduce((previousValue, currentValue) => {
-        previousValue[currentValue] = `The Missing field ${currentValue} is required`
-        return previousValue;
-      } , {});
+  if(!email) missingFields.push('email');
+  if(!password) missingFields.push('password');
+  if(missingFields.length > 0) {
+    const error  = missingFields.reduce((previousValue, currentValue) => {
+      previousValue[currentValue] = `The Missing field ${currentValue} is required`
+      return previousValue;
+    } , {});
+
+    return res.status(401).json({
+      message : "Invalid Data",
+      error,
+      success : false,
+    });
+  }
   
-      return res.status(401).json({
-        message : "Invalid Data",
-        error,
-        success : false,
+  const getVendorData = await vendorModel.findOne({email : req.body.email});
+  console.log("doc aa gaya", getVendorData);
+  if(getVendorData) {
+    if(getVendorData?.password === req.body?.password){
+      const updateUSer =  await vendorModel.findByIdAndUpdate(getVendorData?._id, {
+        lat : req.body.lat,
+        lng : req.body.lng,
+        altitude: req.body.altitude
       });
-    }
-    
-    const getUserData = await UserModel.findOne({email : email});
-    console.log("user", getUserData);
-    if(getUserData) {
-      if(getUserData?.password === password){
-          return res.status(200).json({
-            data : getUserData,
-            success : true,
-          });
-      }else{
-        return res.status(401).json({
-          message : "Invalid email or password",
-          success : false
-        })
-      }
-  
+      console.log("update USer", updateUSer);  
+      return res.status(200).json({
+          data : updateUSer,
+          success : true,
+        });
     }else{
       return res.status(401).json({
         message : "Invalid email or password",
         success : false
       })
     }
+
+  }else{
+    return res.status(401).json({
+      message : "Invalid email or password",
+      success : false
+    })
   }
-  
-  
+}
 
 
 
 
 module.exports = {
-    userRegister,
-    userSignIn
+    vendorRegister,
+    vendorSignIn
 }
 
 

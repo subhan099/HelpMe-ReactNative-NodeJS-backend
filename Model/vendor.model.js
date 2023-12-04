@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const UserSchema = mongoose.Schema({
+const VendorSchema = mongoose.Schema({
     firstName : {
         type : String,
         required : true ,
@@ -25,6 +25,18 @@ const UserSchema = mongoose.Schema({
     otp : {
        type : String,   
     },
+    lat : {
+        type : Number,
+        default : null
+    },
+    lng : {
+        type : Number ,
+        default : null
+    },
+    altitude : {
+        type : Number ,
+        default : null
+    },
     createdAt: {
         type: Date,
         default: Date.now 
@@ -35,13 +47,14 @@ const UserSchema = mongoose.Schema({
     }
 });
 
+VendorSchema.index({  lat: '2dsphere', lng: '2dsphere' } );
 // Update the `updatedAt` field with the current date and time before saving
-UserSchema.pre('save', function (next) {
+VendorSchema.pre('save', function (next) {
     this.updatedAt = new Date();
     next();
 });
 
 
-const UserModel = mongoose.model("users", UserSchema);
+const VendorModel = mongoose.model("Vendor", VendorSchema);
 
-module.exports = UserModel;
+module.exports = VendorModel;
